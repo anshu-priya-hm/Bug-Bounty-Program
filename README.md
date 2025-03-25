@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bug Bounty Program
 
-## Getting Started
+## 📌 Overview  
+This is a **Bug Bounty Program** web application built with **Next.js** and **Node.js (Express & SQLite)**.  
+It allows users to know about HappyMoney Bug Bounty Program and **submit bug reports**  making it an ideal platform for security researchers and developers to contribute to improving application security.  
 
-First, run the development server:
+---
 
-```bash
+## 🚀 Features  
+✅ Submit bug reports through an interactive form  
+✅ Secure backend with **Express.js** and **SQLite** for data storage  
+✅ Responsive UI with reusable **React components**  
+✅ Next.js framework for **optimized performance** and **server-side rendering (SSR)**  
+
+---
+
+## 📂 Project Structure  
+
+### 🖥 Backend (`backend/`)  
+Handles server-side operations using **Express.js** and **SQLite**.  
+- 📂 `database.db` – SQLite database file storing bug reports.  
+- 🖥 `server.js` – Express server handling API requests.  
+- 📜 `package.json` – Backend dependencies.  
+- 🔒 `package-lock.json` – Lock file for dependencies.  
+- 📁 `uploads/` – Directory for storing uploaded bug report images.  
+
+### 🌐 Frontend  
+#### 📦 Components (`components/`)  
+Reusable React components for the UI.  
+- 🏆 `BountyProgram.js` – Main Bug Bounty Program UI.  
+- 🏠 `Header.js` – Website navigation bar.  
+- 📝 `SubmitReport.js` – Form to submit new bug reports.  
+- 📋 `ViewReports.js` – Displays submitted bug reports.  
+
+#### 📄 Pages (`pages/`)  
+Next.js pages for routing.  
+- 🏠 `index.js` – Homepage.  
+- 📝 `submit-report.js` – Bug submission page.  
+
+### 📁 Public Assets (`public/`)  
+Contains static files such as images and icons.  
+
+### 🎨 Styles (`styles/`)  
+CSS stylesheets for styling the application.  
+
+### ⚙️ Configuration & Settings  
+- 🔧 `next.config.js` – Configuration file for Next.js.  
+- 📏 `eslint.config.mjs` – ESLint configuration for code linting.  
+- 🛠 `jsconfig.json` – JavaScript project settings.  
+
+### 📦 Project Metadata  
+- 📜 `package.json` – Contains project dependencies and scripts.  
+- 🔒 `package-lock.json` – Ensures consistent package versions.  
+- 📖 `README.md` – Project documentation.  
+
+---
+
+### 1️⃣ Clone the Repository  
+git clone https://github.com/anshu-priya-hm/Bug-Bounty-Program.git
+
+## 🛠️ Installation & Setup 
+cd Bug-Bounty-Program
+npm install
+
+## Start Backend (Express + SQLite)
+cd Bug-Bounty-Program/backend
+npm install
+node server.js
+
+## Start the application
+cd Bug-Bounty-Program
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
