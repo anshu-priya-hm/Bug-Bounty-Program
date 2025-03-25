@@ -11,7 +11,7 @@ const ViewReports = () => {
   }, []);
 
   return (
-    <div>
+    <div style={{ paddingTop: "80px" }}>
       <h1>Submitted Bug Reports</h1>
       {reports.length === 0 ? (
         <p>No reports found.</p>
