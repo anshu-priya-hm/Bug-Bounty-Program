@@ -55,20 +55,18 @@ CSS stylesheets for styling the application.
 
 ---
 
-### 1️⃣ Clone the Repository  
+### Clone the Repository  
 git clone https://github.com/anshu-priya-hm/Bug-Bounty-Program.git
 
-## 🛠️ Installation & Setup 
-cd Bug-Bounty-Program
-npm install
+### 🛠️ Installation & Setup 
+- cd Bug-Bounty-Program
+- npm install
 
-## Start Backend (Express + SQLite)
-cd Bug-Bounty-Program/backend
-npm install
-node server.js
+### Start the application
+- cd Bug-Bounty-Program
+- npm run dev
 
-## Start the application
-cd Bug-Bounty-Program
-npm run dev
-
-
+### Start Backend (Express + SQLite)
+- cd Bug-Bounty-Program/backend
+- npm install
+- node server.js
