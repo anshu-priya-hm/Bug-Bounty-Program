@@ -1,0 +1,14 @@
+# Node modules & dependencies
+node_modules/
+
+# Next.js build and cache
+.next/
+.cache/
+
+
+
+# Logs & debug files
+npm
+
+# Linting cache
+.eslintcache

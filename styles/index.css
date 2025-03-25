@@ -1,0 +1,25 @@
+button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 20px;
+    background-color: #B38481;
+    color: #282c34;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: rgb(252,146,211);
+  }
+  
+/* Add this to styles/globals.css or index.css */
+#__next-build-watcher, 
+#__next-route-announcer, 
+footer a[href*="vercel"] {
+    display: none !important;
+}
+
+  
+  
+

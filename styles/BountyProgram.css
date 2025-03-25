@@ -1,0 +1,81 @@
+.bounty-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: mabry-pro-regular, sans-serif;
+  line-height: 1.6;
+  text-align: left;
+  color: #333;
+  padding-top: 100px;
+}
+
+.bounty-title {
+  text-align: center;
+  color: #B38481;
+  font-size: 32px;
+  font-weight:bolder;
+  font-family: mabry-pro-regular, sans-serif;
+}
+
+h2 {
+  color: #B38481;
+  margin-top: 20px;
+  font-size: 20px;
+  font-family: mabry-pro-regular, sans-serif;
+}
+
+h3 {
+  color: #B38481;
+  margin-top: 15px;
+  font-size: 15px;
+  font-family: mabry-pro-regular, sans-serif;
+}
+
+p {
+  font-size: 16px;
+  color: #444;
+  font-family: mabry-pro-regular, sans-serif;
+}
+
+.bounty-list {
+  background: #FEF0E3;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #555;
+  margin-top: 10px;
+  font-family: mabry-pro-regular, sans-serif;
+}
+
+.prohibited-title {
+  color: #d32f2f;
+  font-size: 18px;
+  font-family: mabry-pro-regular, sans-serif;
+} 
+
+.submitReport-button{
+  padding: 12px;
+  background: #B38481;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 25px auto;
+  width: 100%;
+  font-weight: bold;
+}
+
+.submitReport-button:hover{
+  background-color: rgb(252,146,211);
+}
+
+
+body, html {
+  margin: 150px;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: rgb(250,244,238);
+}
