@@ -1,19 +1,16 @@
 //use this if view reports button not needed -  even in this you can view uploaded reports on api/reports endpoint on backend url
-import { useState } from "react";
-import '../styles/index.css';
+import React from "react";
 import Header from "../components/Header"; 
 import BountyProgram from "../components/BountyProgram";
-//import SubmitReport from "../components/SubmitReport";
-
 
 export default function BugBountyPage() {
-  //const [showForm, setShowForm] = useState(true);
   return (
-   <div>
-    <BountyProgram />
-    <Header /> 
-    </div>); 
- }
+    <div>
+      <Header /> 
+      <BountyProgram />
+    </div>
+  ); 
+}
 
 
 //use this if you need view reports button on first page

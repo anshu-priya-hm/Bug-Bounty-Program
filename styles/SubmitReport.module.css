@@ -1,6 +1,5 @@
 
-/* Scope all styles to only apply inside SubmitReport */
-.submit-container {
+.submitContainer {
   max-width: 650px;
   margin: 50px auto;
   padding: 30px;
@@ -11,34 +10,32 @@
   font-family: "Arial", sans-serif;
 }
 
-/* Header Styling - Only for Submit Page */
-.submit-header h1 {
+.submitHeader h1 {
   color: #333;
   font-size: 28px;
 }
 
-.submit-header p {
+.submitHeader p {
   color: #666;
   font-size: 16px;
   margin-bottom: 20px;
 }
 
-/* Form Styling */
-.form-container {
+.formContainer {
   text-align: left;
 }
 
-.form-container label {
+.formContainer label {
   display: block;
   font-size: 14px;
   margin-bottom: 5px;
   color: #333;
 }
 
-.form-container input,
-.form-container select,
-.form-container textarea {
-  width: 620px;
+.formContainer input,
+.formContainer select,
+.formContainer textarea {
+  width: 100%;
   padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ccc;
@@ -46,13 +43,11 @@
   font-size: 14px;
 }
 
-/* File Upload Styling */
-.form-container input[type="file"] {
+.formContainer input[type="file"] {
   border: none;
 }
 
-/* Style only buttons inside SubmitReport, not the header */
-.form-container button {
+.formContainer button {
   width: 100%;
   padding: 12px;
   background: #B38481;
@@ -63,20 +58,37 @@
   cursor: pointer;
 }
 
-.form-container button:hover {
-  background: #B38481;
+.formContainer button:hover {
+  background: #A6726D;
 }
 
-/* Back Button */
-.back-button {
+.backButton {
   margin-top: 15px;
 }
 
-.back-button button {
+.backButton button {
   background: #666;
   width: 100%;
+  padding: 10px;
+  border: none;
+  color: white;
+  border-radius: 5px;
 }
 
-.back-button button:hover {
+.backButton button:hover {
   background: #444;
+}
+
+.successMessage {
+  text-align: center;
+  color: green;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.page
+{
+  background-color: rgb(250,244,238);
+  min-height: 100vh;
+  padding: 20px; /* Adds some space around the content */
 }

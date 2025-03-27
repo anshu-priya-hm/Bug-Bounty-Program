@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import "../styles/SubmitReport.css";
+import styles from "../styles/SubmitReport.module.css";
 
 const SubmitReport = () => {
   const [formData, setFormData] = useState({
@@ -48,13 +48,14 @@ const SubmitReport = () => {
   };
 
   return (
-    <div className="submit-container">
-      <div className="submit-header">
+    <div className={styles.page}>
+    <div className={styles.submitContainer}>
+      <div className={styles.submitHeader}>
         <h1>Submit a Bug Report</h1>
         <p>Help us improve Happy Money by reporting bugs or security vulnerabilities you find.</p>
       </div>
 
-      <div className="form-container">
+      <div className={styles.formContainer}>
         <form onSubmit={handleSubmit}>
           <label>Your Name</label>
           <input type="text" name="name" value={formData.name} onChange={handleChange} required />
@@ -74,15 +75,15 @@ const SubmitReport = () => {
           <button type="submit">Submit Report</button>
         </form>
 
-        {message && <p style={{ textAlign: 'center', color: 'green' }}>{message}</p>}
+        {message && <p className={styles.successMessage}>{message}</p>}
 
-        <div className="back-button">
+        <div className={styles.backButton}>
           <button onClick={() => window.history.back()}>Go Back</button>
         </div>
       </div>
+    </div>
     </div>
   );
 };
 
 export default SubmitReport;
-

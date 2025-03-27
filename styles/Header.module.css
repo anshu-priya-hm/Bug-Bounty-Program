@@ -1,0 +1,149 @@
+.header {
+  background-color: rgb(250,244,238);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;  
+  top: 0;
+  left: 0;
+  width: 97%;
+  z-index: 1000;  
+  max-width: 100%;
+}
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  height: 80px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.logo {
+  height: 50px;
+  width: 285px;
+  margin-right: 50px;
+}
+
+.nav {
+  display: flex;
+  gap: 50px;
+}
+
+.navItem {
+  position: relative;
+  color: black;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.navItem:hover {
+  color: rgb(252,146,211);
+}
+
+/* Dropdown menu styling */
+.dropdownMenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  color: black;
+  box-shadow: 4px 4px 0px black;
+  z-index: 10;
+  padding: 10px 0;
+  width: 200px;
+  border: 1px solid black;
+}
+
+.dropdownMenu a {
+  display: block;
+  padding: 10px 20px;
+  text-decoration: none;
+  color: black;
+  text-align: left;
+}
+
+.dropdownMenu a:hover {
+  background-color: #f0f0f0;
+}
+
+/* Show dropdown on hover */
+.navItem:hover .dropdownMenu {
+  display: block;
+}
+
+/* Dropdown icon (caret) */
+.dropdownIcon {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 8px;
+  border-left: 2px solid black;
+  border-bottom: 2px solid black;
+  transform: rotate(-45deg);
+  position: relative;
+  top: -2px;
+}
+
+/* Change caret color on hover */
+.navItem:hover > .dropdownIcon {
+  transform: rotate(135deg);
+  border-left-color: rgb(252,146,211);
+  border-bottom-color: rgb(252,146,211);
+}
+
+/* Header right section */
+.headerRight {
+  display: flex;
+  align-items: center; 
+  gap: 20px;
+  margin-left: auto;
+}
+
+/* Login link */
+.loginLink {
+  font-size: 17px;
+  font-weight: bold;
+  color: black;
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+.loginLink:hover {
+  color: rgb(252,146,211);
+}
+
+/* Check My Rate button */
+.headerButton {
+  background-color: rgb(252,146,211);
+  color: black;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.headerButton:hover {
+  background-color: rgb(240,130,200);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .nav {
+      flex-direction: column;
+      gap: 20px;
+  }
+
+  .headerButton {
+      width: 100%;
+      text-align: center;
+  }
+}
+
+
+
