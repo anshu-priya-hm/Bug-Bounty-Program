@@ -1,6 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
 const multer = require("multer");
 const path = require("path");
 const helmet = require("helmet");
@@ -10,6 +9,30 @@ const xss = require("xss-clean");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+const { v4: uuidv4 } = require('uuid');
+
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command
+} = require("@aws-sdk/client-s3");
+
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    sessionToken: process.env.AWS_SESSION_TOKEN, 
+  },
+});
+
+
+
+const BUCKET = process.env.AWS_S3_BUCKET;
 
 // Middleware
 app.use(express.json());
@@ -25,78 +48,131 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Initialize SQLite Database
-const db = new sqlite3.Database("./database.db", (err) => {
-  if (err) {
-    console.error("Database connection failed:", err.message);
-  } else {
-    console.log("Connected to SQLite database.");
-  }
-});
 
-// Create reports table (if not exists)
-db.run(
-  `CREATE TABLE IF NOT EXISTS reports (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    bug_description TEXT NOT NULL,
-    impact TEXT NOT NULL,
-    file_path TEXT
-  )`
-);
+// Generate a pre-signed URL for screenshot uploads
+app.post('/get-upload-url', async (req, res) => {
+  const { fileName, fileType } = req.body;
 
-// Configure Multer for File Uploads (Only PNG & JPEG)
-const storage = multer.diskStorage({
-  destination: "./uploads/",
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
-  },
-});
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === "image/png" || file.mimetype === "image/jpeg") {
-    cb(null, true);
-  } else {
-    cb(new Error("Only PNG & JPEG files are allowed!"), false);
-  }
-};
-const upload = multer({ storage, fileFilter });
-
-// API Route to Submit a Bug Report
-app.post("/api/submit-report", upload.single("file"), (req, res) => {
-  const { name, email, bug_description, impact } = req.body;
-  const filePath = req.file ? req.file.path : null;
-
-  // Validate Input
-  if (!name || !email || !bug_description || !impact) {
-    return res.status(400).json({ message: "All fields are required" });
+  if (!fileName || !fileType) {
+    return res.status(400).json({ message: 'Missing file info' });
   }
 
-  // Insert into database
-  db.run(
-    `INSERT INTO reports (name, email, bug_description, impact, file_path) VALUES (?, ?, ?, ?, ?)`,
-    [name, email, bug_description, impact, filePath],
-    function (err) {
-      if (err) {
-        console.error("Error inserting report:", err.message);
-        return res.status(500).json({ message: "Database error" });
-      }
-      res.json({ success: true, message: "Bug report submitted successfully!" });
-    }
-  );
-});
+  const extension = path.extname(fileName);
+  const key = `screenshots/${uuidv4()}${extension}`;
 
-// API Route to Get All Reports
-app.get("/api/reports", (req, res) => {
-  db.all("SELECT * FROM reports", [], (err, rows) => {
-    if (err) {
-      console.error("Error fetching reports:", err.message);
-      return res.status(500).json({ message: "Database error" });
-    }
-    res.json(rows);
+  const command = new PutObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+    ContentType: fileType
   });
+
+  try {
+    const uploadURL = await getSignedUrl(s3, command, { expiresIn: 120 });
+    res.json({ uploadURL, key });
+    console.log('Upload URL:', uploadURL);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to generate upload URL' });
+  }
 });
-app.use("/uploads", express.static("uploads"));
+
+
+// Submit the report metadata
+app.post('/submitreport', express.json(), async (req, res) => {
+  console.log('Received report submission:', req.body); // Add this line
+  try {
+    const { name, email, bugDescription, impact, screenshotKey } = req.body;
+
+    if (!name || !email || !bugDescription) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    const reportData = {
+      name,
+      email,
+      bugDescription,
+      impact,
+      createdAt: new Date().toISOString(),
+      screenshotUrl: screenshotKey ? `https://${BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${screenshotKey}` : null,
+      status: 'open'
+    };
+
+    const reportKey = `reports/${uuidv4()}.json`;
+
+    const reportCommand = new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: reportKey,
+      Body: JSON.stringify(reportData),
+      ContentType: 'application/json'
+    });
+    
+    await s3.send(reportCommand);
+    
+
+    res.json({ success: true, message: 'Bug report submitted', reportId: reportKey });
+
+    console.log('Report data prepared:', reportData); // Add this line
+    console.log('Report successfully saved to S3'); // Add this line
+
+  } catch (err) {
+    console.error('Full submission error:', err); // Enhanced logging
+    console.error('Error stack:', err.stack); // Add stack trace
+    res.status(500).json({ message: 'Failed to submit bug report', error: err.message });
+  }
+
+  
+
+});
+
+app.get("/admin/reports", async (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth || auth !== `Bearer ${process.env.ADMIN_SECRET}`) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const command = new ListObjectsV2Command({
+      Bucket: BUCKET,
+      Prefix: "reports/"
+    });
+
+    const { Contents } = await s3.send(command);
+
+    const reports = Contents.map(obj => ({
+      key: obj.Key,
+      lastModified: obj.LastModified,
+      size: obj.Size
+    }));
+
+    res.json({ reports });
+  } catch (err) {
+    console.error("Error listing reports:", err);
+    res.status(500).json({ message: "Failed to fetch reports" });
+  }
+});
+
+app.get("/admin/report/:key", async (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth || auth !== `Bearer ${process.env.ADMIN_SECRET}`) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const { key } = req.params;
+
+  const command = new GetObjectCommand({
+    Bucket: BUCKET,
+    Key: decodeURIComponent(key)
+  });
+
+  try {
+    const url = await getSignedUrl(s3, command, { expiresIn: 60 });
+    res.json({ downloadURL: url });
+  } catch (err) {
+    console.error("Error generating download URL:", err);
+    res.status(500).json({ message: "Could not generate download link" });
+  }
+});
+
 
 // Start Server
 app.listen(PORT, () => {

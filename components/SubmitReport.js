@@ -10,6 +10,8 @@ const SubmitReport = () => {
   });
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+
 
   const handleChange = (e) => {
     setFormData({
@@ -24,28 +26,78 @@ const SubmitReport = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formDataToSend = new FormData();
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('email', formData.email);
-    formDataToSend.append('bug_description', formData.bugDescription);
-    formDataToSend.append('impact', formData.impact);
-    if (file) formDataToSend.append('file', file);
-
-    const response = await fetch('http://localhost:5000/api/submit-report', {
-      method: 'POST',
-      body: formDataToSend
-    });
-
-    const data = await response.json();
-    setMessage(data.message);
-
-    if (response.ok) {
+    setMessage('Submitting report...');
+    setIsSuccess(false);
+  
+    try {
+      let screenshotKey = null;
+  
+      if (file) {
+        console.log('Preparing to upload file:', file.name);
+  
+        // 🔥 Request presigned URL
+        const presignRes = await fetch('http://localhost:5000/get-upload-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: file.name, fileType: file.type })
+        });
+  
+        if (!presignRes.ok) {
+          const errorData = await presignRes.json();
+          throw new Error(`Presign URL failed: ${errorData.message}`);
+        }
+  
+        const { uploadURL, key } = await presignRes.json();
+        screenshotKey = key;
+        console.log('Got presigned URL:', uploadURL);
+  
+        // ✅ Upload directly to S3 using only Content-Type header
+        const uploadRes = await fetch(uploadURL, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type // ✅ Don't include any other headers
+          },
+          body: file
+        });
+  
+        if (!uploadRes.ok) {
+          throw new Error(`File upload failed: ${uploadRes.status}`);
+        }
+  
+        console.log('File uploaded successfully');
+      }
+  
+      // 📝 Submit bug report with file key
+      const reportRes = await fetch('http://localhost:5000/submitreport', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          bugDescription: formData.bugDescription,
+          impact: formData.impact,
+          screenshotKey
+        })
+      });
+  
+      if (!reportRes.ok) {
+        const errorData = await reportRes.json();
+        throw new Error(errorData.message || 'Report submission failed');
+      }
+  
+      const data = await reportRes.json();
+      setMessage('Report submitted successfully!');
+      setIsSuccess(true);
       setFormData({ name: '', email: '', bugDescription: '', impact: '' });
       setFile(null);
       document.querySelector('input[type="file"]').value = "";
+    } catch (error) {
+      console.error('Full submission error:', error);
+      setMessage(`Error: ${error.message}`);
     }
-  };
+  };  
+  
+
 
   return (
     <div className={styles.page}>

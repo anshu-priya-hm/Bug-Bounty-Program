@@ -12,3 +12,5 @@ npm
 
 # Linting cache
 .eslintcache
+
+.env
