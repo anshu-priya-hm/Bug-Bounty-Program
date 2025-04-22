@@ -151,6 +151,7 @@ app.get("/admin/reports", async (req, res) => {
   }
 });
 
+
 app.get("/admin/report/:key", async (req, res) => {
   const auth = req.headers.authorization;
   if (!auth || auth !== `Bearer ${process.env.ADMIN_SECRET}`) {
@@ -159,17 +160,34 @@ app.get("/admin/report/:key", async (req, res) => {
 
   const { key } = req.params;
 
-  const command = new GetObjectCommand({
-    Bucket: BUCKET,
-    Key: decodeURIComponent(key)
-  });
-
   try {
+    // Step 1: Get the bug report JSON
+    const command = new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: decodeURIComponent(key),
+    });
+
     const url = await getSignedUrl(s3, command, { expiresIn: 60 });
-    res.json({ downloadURL: url });
+    const reportRes = await fetch(url);
+    const reportJson = await reportRes.json();
+
+    // Step 2: If screenshot is present, generate signed URL for that too
+    if (reportJson.screenshotUrl) {
+      const screenshotKey = reportJson.screenshotUrl.split(`.com/`)[1]; // Extract just the S3 key
+      const screenshotCommand = new GetObjectCommand({
+        Bucket: BUCKET,
+        Key: screenshotKey,
+      });
+
+      const signedScreenshotUrl = await getSignedUrl(s3, screenshotCommand, { expiresIn: 60 });
+      reportJson.screenshotUrl = signedScreenshotUrl;
+    }
+
+    // Send the modified report JSON directly
+    res.json({ report: reportJson });
   } catch (err) {
-    console.error("Error generating download URL:", err);
-    res.status(500).json({ message: "Could not generate download link" });
+    console.error("Error loading report or screenshot:", err);
+    res.status(500).json({ message: "Could not load report" });
   }
 });
 

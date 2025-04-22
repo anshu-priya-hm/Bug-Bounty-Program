@@ -35,7 +35,7 @@ const SubmitReport = () => {
       if (file) {
         console.log('Preparing to upload file:', file.name);
   
-        // 🔥 Request presigned URL
+        //  Request presigned URL
         const presignRes = await fetch('http://localhost:5000/get-upload-url', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -51,11 +51,11 @@ const SubmitReport = () => {
         screenshotKey = key;
         console.log('Got presigned URL:', uploadURL);
   
-        // ✅ Upload directly to S3 using only Content-Type header
+        //  Upload directly to S3 using only Content-Type header
         const uploadRes = await fetch(uploadURL, {
           method: 'PUT',
           headers: {
-            'Content-Type': file.type // ✅ Don't include any other headers
+            'Content-Type': file.type 
           },
           body: file
         });
@@ -67,7 +67,7 @@ const SubmitReport = () => {
         console.log('File uploaded successfully');
       }
   
-      // 📝 Submit bug report with file key
+      //  Submit bug report with file key
       const reportRes = await fetch('http://localhost:5000/submitreport', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -122,7 +122,7 @@ const SubmitReport = () => {
           <textarea name="impact" value={formData.impact} onChange={handleChange} required rows="3" />
 
           <label>Attach Screenshot or File</label>
-          <input type="file" accept=".png, .jpg, .jpeg" onChange={handleFileChange} />
+          <input type="file" accept=".png, .jpg, .jpeg" onChange={handleFileChange}  required />
 
           <button type="submit">Submit Report</button>
         </form>

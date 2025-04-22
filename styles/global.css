@@ -15,3 +15,23 @@ body {
   line-height: 35px;
   letter-spacing: 0.45px;
 }
+
+
+/*styles for view report button*/
+.viewReports-button{
+  padding: 12px;
+  background: #B38481;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 25px auto;
+  font-weight: bold;
+  width: 64%;
+}
+
+.viewReports-button:hover {
+  background-color: rgb(252,146,211);
+}
