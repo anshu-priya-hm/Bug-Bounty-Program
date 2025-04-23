@@ -30,6 +30,10 @@ const s3 = new S3Client({
   },
 });
 
+const { WebClient } = require('@slack/web-api');
+
+const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+const SLACK_CHANNEL = process.env.SLACK_CHANNEL_ID;
 
 
 const BUCKET = process.env.AWS_S3_BUCKET;
@@ -113,6 +117,26 @@ app.post('/submitreport', express.json(), async (req, res) => {
 
     console.log('Report data prepared:', reportData); // Add this line
     console.log('Report successfully saved to S3'); // Add this line
+
+
+    await s3.send(reportCommand);
+
+    // Optional: Slack notification
+    const slackMessage = `🐞 *New Bug Report Submitted!*\n
+    *Name:* ${name}
+    *Email:* ${email}
+    *Impact:* ${impact || 'N/A'}
+    *Description:* ${bugDescription}
+    ${reportData.screenshotUrl ? `*Screenshot:* ${reportData.screenshotUrl}` : ''}
+    `;
+    
+    slack.chat.postMessage({
+      channel: SLACK_CHANNEL,
+      text: slackMessage
+    }).catch(console.error); // don't block response
+    
+    res.json({ success: true, message: 'Bug report submitted', reportId: reportKey });
+    
 
   } catch (err) {
     console.error('Full submission error:', err); // Enhanced logging
