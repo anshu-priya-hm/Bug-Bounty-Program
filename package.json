@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.787.0",
     "@slack/web-api": "^7.9.1",
     "next": "15.2.3",
     "react": "^19.0.0",

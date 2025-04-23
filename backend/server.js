@@ -113,27 +113,36 @@ app.post('/submitreport', express.json(), async (req, res) => {
     await s3.send(reportCommand);
     
 
-    res.json({ success: true, message: 'Bug report submitted', reportId: reportKey });
-
-    console.log('Report data prepared:', reportData); // Add this line
-    console.log('Report successfully saved to S3'); // Add this line
+    console.log('Report data prepared:', reportData); 
+    console.log('Report successfully saved to S3'); 
 
 
     await s3.send(reportCommand);
 
-    // Optional: Slack notification
+  //Slack notification
+    let signedScreenshotUrl = null;
+
+    if (screenshotKey) {
+      const screenshotCommand = new GetObjectCommand({
+        Bucket: BUCKET,
+        Key: screenshotKey,
+      });
+
+      signedScreenshotUrl = await getSignedUrl(s3, screenshotCommand, { expiresIn: 60 * 2 }); // 2 mins
+    }
+
     const slackMessage = `🐞 *New Bug Report Submitted!*\n
     *Name:* ${name}
     *Email:* ${email}
     *Impact:* ${impact || 'N/A'}
     *Description:* ${bugDescription}
-    ${reportData.screenshotUrl ? `*Screenshot:* ${reportData.screenshotUrl}` : ''}
+    ${signedScreenshotUrl ? `*Screenshot:* ${signedScreenshotUrl}` : ''}
     `;
-    
+
     slack.chat.postMessage({
       channel: SLACK_CHANNEL,
       text: slackMessage
-    }).catch(console.error); // don't block response
+    }).catch(console.error);
     
     res.json({ success: true, message: 'Bug report submitted', reportId: reportKey });
     
