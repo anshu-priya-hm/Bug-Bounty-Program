@@ -30,6 +30,10 @@ const s3 = new S3Client({
   },
 });
 
+const { WebClient } = require('@slack/web-api');
+
+const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+const SLACK_CHANNEL = process.env.SLACK_CHANNEL_ID;
 
 
 const BUCKET = process.env.AWS_S3_BUCKET;
@@ -109,10 +113,50 @@ app.post('/submitreport', express.json(), async (req, res) => {
     await s3.send(reportCommand);
     
 
-    res.json({ success: true, message: 'Bug report submitted', reportId: reportKey });
+    console.log('Report data prepared:', reportData); 
+    console.log('Report successfully saved to S3'); 
 
-    console.log('Report data prepared:', reportData); // Add this line
-    console.log('Report successfully saved to S3'); // Add this line
+
+    await s3.send(reportCommand);
+
+  //Slack notification
+    let signedScreenshotUrl = null;
+
+    if (screenshotKey) {
+      const screenshotCommand = new GetObjectCommand({
+        Bucket: BUCKET,
+        Key: screenshotKey,
+      });
+
+      signedScreenshotUrl = await getSignedUrl(s3, screenshotCommand, { expiresIn: 60 * 2 }); // 2 mins
+    }
+
+//use this if you want to get the full screenshot url with s3 urls and tokens exposed   
+    // const slackMessage = `🐞 *New Bug Report Submitted!*\n
+    // *Name:* ${name}
+    // *Email:* ${email}
+    // *Impact:* ${impact || 'N/A'}
+    // *Description:* ${bugDescription}
+    // ${signedScreenshotUrl ? `*Screenshot:* ${signedScreenshotUrl}` : ''}
+    // `;
+
+//use this if you want to get smaller screenshot url with no s3 urls and tokens exposed
+    const slackMessage = `🐞 *New Bug Report Submitted!*\n
+    *Name:* ${name}
+    *Email:* ${email}
+    *Impact:* ${impact || 'N/A'}
+    *Description:* ${bugDescription}
+    ${signedScreenshotUrl ? `*Screenshot:* ${process.env.SERVER_PUBLIC_URL}/screenshot/${encodeURIComponent(screenshotKey)}
+` : ''}
+    `;
+
+    slack.chat.postMessage({
+      channel: SLACK_CHANNEL,
+      text: slackMessage
+    }).catch(console.error);
+    
+    res.json({ success: true, message: 'Bug report submitted', reportId: reportKey });
+    
 
   } catch (err) {
     console.error('Full submission error:', err); // Enhanced logging
@@ -190,6 +234,38 @@ app.get("/admin/report/:key", async (req, res) => {
     res.status(500).json({ message: "Could not load report" });
   }
 });
+
+
+app.get("/screenshot/:key", async (req, res) => {
+  const key = decodeURIComponent(req.params.key);
+
+  if (!key.startsWith("screenshots/")) {
+    return res.status(400).json({ message: "Invalid screenshot key" });
+  }
+
+  try {
+    const command = new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: key
+    });
+
+    const s3Response = await s3.send(command);
+
+    res.set({
+      'Content-Type': s3Response.ContentType || 'image/png',
+      //'Content-Disposition': `attachment; filename="${path.basename(key)}"`,    //use this if you want to get link that directly downloads the image
+      'Content-Disposition': `inline; filename="${path.basename(key)}"`,        //use this if you want to get a link that shows file in browser
+      'Cache-Control': 'public, max-age=31536000' // Optional: cache for 1 year
+    });
+
+    s3Response.Body.pipe(res); // Stream the file directly to response
+
+  } catch (err) {
+    console.error("Screenshot proxy error:", err);
+    res.status(404).json({ message: "Screenshot not found" });
+  }
+});
+
 
 
 // Start Server
