@@ -1,30 +1,49 @@
-# Use Node.js with Alpine
-FROM node:18-alpine3.18
-
-# Set working directory
+# Base image for Node.js
+FROM node:18-alpine AS base
 WORKDIR /app
 
-# Update repositories and install necessary dependencies
-RUN apk update && apk add --no-cache python3 py3-pip py3-setuptools make g++ sqlite-libs
-
-# Copy package.json and install frontend dependencies
-COPY package.json package-lock.json ./
-RUN npm install
-
-# Move to backend folder and install backend dependencies
-WORKDIR /app/backend
-COPY backend/package.json backend/package-lock.json ./
-RUN npm install --build-from-source --force
-
-# Move back to app directory and copy all files
-WORKDIR /app
-COPY . .
-
-# To build Next.js for production
+# ---------- FRONTEND BUILD ----------
+FROM base AS frontend
+COPY package*.json ./
+COPY next.config.js jsconfig.json eslint.config.mjs ./
+COPY components ./components
+COPY pages ./pages
+COPY public ./public
+COPY styles ./styles
+RUN npm install --omit=dev
 RUN npm run build
 
-# Expose backend and frontend ports
-EXPOSE 3000 5000
+# ---------- BACKEND BUILD ----------
+FROM base AS backend
+WORKDIR /app/backend
+COPY backend/package*.json ./
+COPY backend/server.js ./
+COPY backend/.env ./          
+RUN npm install --omit=dev
 
-# Start both frontend & backend
-CMD ["sh", "-c", "node backend/server.js & npm run start"]
+# ---------- FINAL STAGE ----------
+FROM node:18-alpine AS final
+WORKDIR /app
+
+# Copy frontend build and assets
+COPY --from=frontend /app/.next ./.next
+COPY --from=frontend /app/public ./public
+COPY --from=frontend /app/package*.json ./
+COPY --from=frontend /app/next.config.js ./
+COPY --from=frontend /app/jsconfig.json ./
+COPY --from=frontend /app/components ./components
+COPY --from=frontend /app/pages ./pages
+COPY --from=frontend /app/styles ./styles
+
+# Copy backend
+COPY --from=backend /app/backend ./backend
+
+# Install only frontend production deps
+RUN npm install --omit=dev
+
+# Expose frontend port
+EXPOSE 3000
+EXPOSE 5000
+
+# Start both backend and frontend
+CMD ["sh", "-c", "node backend/server.js & npm start"]
